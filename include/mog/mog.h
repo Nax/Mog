@@ -4,10 +4,15 @@
 #include <stddef.h>
 #include <stdint.h>
 
-void    mogReplaceFunction(void* dst, void* newAddr);
-void    mogReplaceSkip(void* dst, size_t len);
-void    mogReplaceNop(void* dst, size_t len);
-void*   mogVirtualAddress(uint32_t fixedAddr);
+#if defined(__cplusplus)
+# define MOG_API    extern "C"
+#else
+# define MOG_API
+#endif
 
+MOG_API void    mogReplaceFunction(void* dst, void* newAddr);
+MOG_API void    mogReplaceSkip(void* dst, size_t len);
+MOG_API void    mogReplaceNop(void* dst, size_t len);
+MOG_API void*   mogVirtualAddress(uint32_t fixedAddr);
 
 #endif
