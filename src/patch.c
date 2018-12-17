@@ -16,6 +16,28 @@ void mogReplaceFunction(void* dst, void* newAddr)
     FlushInstructionCache(GetCurrentProcess(), dst, 5);
 }
 
+void* mogRedirectFunction(void* dst, void* newAddr)
+{
+    DWORD oldProtect;
+    uint32_t jmpDelta;
+
+    uint8_t* trampoline = VirtualAlloc(NULL, 11, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+    memcpy(trampoline, dst, 6);
+    jmpDelta = ((char*)dst + 6) - (trampoline + 11);
+    trampoline[6] = 0xe9;
+    *(uint32_t*)(trampoline + 7) = jmpDelta;
+    jmpDelta = (uint32_t)newAddr - ((uint32_t)dst + 5);
+    VirtualProtect(dst, 6, PAGE_READWRITE, &oldProtect);
+    *(uint8_t*)(dst) = 0xe9;
+    *((uint32_t*)((uint8_t*)dst + 1)) = jmpDelta;
+    *((uint8_t*)dst + 5) = 0x90;
+    VirtualProtect(dst, 6, oldProtect, &oldProtect);
+    VirtualProtect(trampoline, 11, PAGE_EXECUTE_READ, &oldProtect);
+    FlushInstructionCache(GetCurrentProcess(), dst, 6);
+    FlushInstructionCache(GetCurrentProcess(), trampoline, 11);
+    return trampoline;
+}
+
 void mogReplaceSkip(void* dst, size_t len)
 {
     size_t i;
