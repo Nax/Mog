@@ -4,6 +4,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+
 #if defined(__cplusplus)
 # define MOG_API    extern "C"
 #else
@@ -11,6 +12,7 @@
 #endif
 
 MOG_API void    mogReplaceFunction(void* dst, void* newAddr);
+MOG_API void*   mogRedirectFunction(void* dst, void* newAddr);
 MOG_API void    mogReplaceSkip(void* dst, size_t len);
 MOG_API void    mogReplaceNop(void* dst, size_t len);
 MOG_API void*   mogVirtualAddress(uint32_t fixedAddr);
