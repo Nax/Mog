@@ -3,7 +3,7 @@
 #include <windows.h>
 #include <mog/mog.h>
 
-void mogReplaceFunction(void* dst, void* newAddr)
+MOG_API void mogReplaceFunction(void* dst, void* newAddr)
 {
     DWORD oldProtect;
     uint32_t jmpDelta;
@@ -16,7 +16,7 @@ void mogReplaceFunction(void* dst, void* newAddr)
     FlushInstructionCache(GetCurrentProcess(), dst, 5);
 }
 
-void* mogRedirectFunction(void* dst, void* newAddr)
+MOG_API void* mogRedirectFunction(void* dst, void* newAddr)
 {
     DWORD oldProtect;
     uint32_t jmpDelta;
@@ -38,7 +38,7 @@ void* mogRedirectFunction(void* dst, void* newAddr)
     return trampoline;
 }
 
-void mogReplaceSkip(void* dst, size_t len)
+MOG_API void mogReplaceSkip(void* dst, size_t len)
 {
     size_t i;
     DWORD oldProtect;
@@ -93,7 +93,7 @@ void mogReplaceSkip(void* dst, size_t len)
     FlushInstructionCache(GetCurrentProcess(), dst, len);
 }
 
-void mogReplaceNop(void* dst, size_t len)
+MOG_API void mogReplaceNop(void* dst, size_t len)
 {
     size_t i;
     DWORD oldProtect;
@@ -121,7 +121,33 @@ void mogReplaceNop(void* dst, size_t len)
     FlushInstructionCache(GetCurrentProcess(), dst, len);
 }
 
-void* mogVirtualAddress(uint32_t fixedAddr)
+MOG_API int mogReplaceInstuctionAddress(void* iAddr, void* src, void* dst)
+{
+    uint32_t* tmp;
+    uint32_t src32 = (uint32_t)src;
+    uint32_t dst32 = (uint32_t)dst;
+    DWORD oldProtect;
+    int ret = 0;
+
+    VirtualProtect(iAddr, 16, PAGE_READWRITE, &oldProtect);
+
+    for (size_t i = 0; i < 13; ++i)
+    {
+        tmp = (uint32_t*)(((uint8_t*)iAddr) + i);
+        if (*tmp == src32)
+        {
+            *tmp = dst32;
+            ret = 1;
+            break;
+        }
+    }
+
+    VirtualProtect(iAddr, 16, oldProtect, &oldProtect);
+    FlushInstructionCache(GetCurrentProcess(), iAddr, 16);
+    return ret;
+}
+
+MOG_API void* mogVirtualAddress(uint32_t fixedAddr)
 {
     return (void*)(fixedAddr + (uint32_t)GetModuleHandleA(NULL));
 }
