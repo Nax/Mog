@@ -17,5 +17,6 @@ MOG_API void    mogReplaceSkip(void* dst, size_t len);
 MOG_API void    mogReplaceNop(void* dst, size_t len);
 MOG_API int     mogReplaceInstuctionAddress(void* iAddr, void* src, void* dst);
 MOG_API void*   mogVirtualAddress(uint32_t fixedAddr);
+MOG_API void    mogInsertCall(void* dst, void* function);
 
 #endif

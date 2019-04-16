@@ -151,3 +151,18 @@ MOG_API void* mogVirtualAddress(uint32_t fixedAddr)
 {
     return (void*)(fixedAddr + (uint32_t)GetModuleHandleA(NULL));
 }
+
+MOG_API void mogInsertCall(void* dst, void* function)
+{
+    DWORD oldProtect;
+    uint32_t jmpDelta;
+
+    jmpDelta = (uint32_t)function - ((uint32_t)dst + 6);
+    VirtualProtect(dst, 7, PAGE_READWRITE, &oldProtect);
+    ((uint8_t*)dst)[0] = 0x60;
+    ((uint8_t*)dst)[1] = 0xe8;
+    *((uint32_t*)((uint8_t*)dst + 2)) = jmpDelta;
+    ((uint8_t*)dst)[6] = 0x61;
+    VirtualProtect(dst, 7, oldProtect, &oldProtect);
+    FlushInstructionCache(GetCurrentProcess(), dst, 7);
+}
